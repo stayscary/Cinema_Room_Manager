@@ -1,19 +1,9 @@
 type: edu
 files:
-- name: src/Cinema.java
-  visible: true
-  text: |-
-    public class Cinema {
-
-        public static void main(String[] args) {
-            // Write your code here
-        }
-    }
-  learner_created: false
 - name: test/CinemaTests.java
   visible: false
   text: |
-    import org.assertj.core.internal.cglib.asm.$AnnotationVisitor;
+    import cinema.Cinema;
     import org.hyperskill.hstest.dynamic.input.DynamicTestingMethod;
     import org.hyperskill.hstest.exception.outcomes.WrongAnswer;
     import org.hyperskill.hstest.stage.StageTest;
@@ -202,7 +192,77 @@ files:
         }
 
         @DynamicTestingMethod
-        CheckResult test5_checkStatistics() {
+        CheckResult test5_checkErrorHandling() {
+
+            TestedProgram program;
+            String output;
+
+            program = new TestedProgram(Cinema.class);
+            program.start();
+
+            program.execute("9\n9");
+            program.execute("2\n1\n1");
+
+            output = program.execute("2\n1\n1");
+
+            if (!output.toLowerCase().contains("that ticket has already been purchased")) {
+                return CheckResult.wrong("If the user tries to buy a ticket that already has been purchased you should print: " +
+                    "'That ticket has already been purchased'");
+            }
+
+            if (!output.toLowerCase().contains("enter a row number")) {
+                return CheckResult.wrong("If the user tries to buy a ticket that already has been purchased you should " +
+                    "ask to enter a seat coordinates again.");
+            }
+
+            output = program.execute("9");
+
+            if (!output.toLowerCase().contains("enter a seat number in that row:")) {
+                return CheckResult.wrong("After entering a row number you should ask for entering a seat number in that row.\n" +
+                    "Your output should contain 'Enter a seat number in that row:'.");
+            }
+
+            program.execute("5");
+
+            output = program.execute("2\n9\n5");
+
+            if (!output.toLowerCase().contains("that ticket has already been purchased")) {
+                return CheckResult.wrong("If the user tries to buy a ticket that already has been purchased you should print:\n" +
+                    "'That ticket has already been purchased' and ask to enter a seat coordinates again.");
+            }
+
+            program.execute("2\n3");
+
+            output = program.execute("2\n10\n1");
+
+            if (!output.toLowerCase().contains("wrong input")) {
+                return CheckResult.wrong("If the user input coordinates is out of bounds you should print 'Wrong input'");
+            }
+
+            if (!output.toLowerCase().contains("enter a row number")) {
+                return CheckResult.wrong("If the user input coordinates is out of bounds you should " +
+                    "ask to enter a seat coordinates again.");
+            }
+
+            program.execute("5\n10");
+
+            if (!output.toLowerCase().contains("wrong input")) {
+                return CheckResult.wrong("If the user input coordinates is out of bounds you should print 'Wrong input'");
+            }
+
+            program.execute("-5\n12");
+
+            if (!output.toLowerCase().contains("wrong input")) {
+                return CheckResult.wrong("If the user input coordinates is out of bounds you should print 'Wrong input'");
+            }
+
+            program.execute("5\n5");
+
+            return CheckResult.correct();
+        }
+
+        @DynamicTestingMethod
+        CheckResult test6_checkStatistics() {
 
             TestedProgram program;
             String output;
@@ -271,76 +331,6 @@ files:
             checkPercentage(output, "100.00%");
             checkCurrentIncome(output, "$720");
             checkTotalIncome(output, "$720");
-
-            return CheckResult.correct();
-        }
-
-        @DynamicTestingMethod
-        CheckResult test6_checkErrorHandling() {
-
-            TestedProgram program;
-            String output;
-
-            program = new TestedProgram(Cinema.class);
-            program.start();
-
-            program.execute("9\n9");
-            program.execute("2\n1\n1");
-
-            output = program.execute("2\n1\n1");
-
-            if (!output.toLowerCase().contains("that ticket has already been purchased")) {
-                return CheckResult.wrong("If the user tries to buy a ticket that already has been purchased you should print: " +
-                    "'That ticket has already been purchased'");
-            }
-
-            if (!output.toLowerCase().contains("enter a row number")) {
-                return CheckResult.wrong("If the user tries to buy a ticket that already has been purchased you should " +
-                    "ask to enter a seat coordinates again.");
-            }
-
-            output = program.execute("9");
-
-            if (!output.toLowerCase().contains("enter a seat number in that row:")) {
-                return CheckResult.wrong("After entering a row number you should ask for entering a seat number in that row.\n" +
-                    "Your output should contain 'Enter a seat number in that row:'.");
-            }
-
-            program.execute("5");
-
-            output = program.execute("2\n9\n5");
-
-            if (!output.toLowerCase().contains("that ticket has already been purchased")) {
-                return CheckResult.wrong("If the user tries to buy a ticket that already has been purchased you should print:\n" +
-                    "'That ticket has already been purchased' and ask to enter a seat coordinates again.");
-            }
-
-            program.execute("2\n3");
-
-            output = program.execute("2\n10\n1");
-
-            if (!output.toLowerCase().contains("wrong input")) {
-                return CheckResult.wrong("If the user input coordinates is out of bounds you should print 'Wrong input'");
-            }
-
-            if (!output.toLowerCase().contains("enter a row number")) {
-                return CheckResult.wrong("If the user input coordinates is out of bounds you should " +
-                    "ask to enter a seat coordinates again.");
-            }
-
-            program.execute("5\n10");
-
-            if (!output.toLowerCase().contains("wrong input")) {
-                return CheckResult.wrong("If the user input coordinates is out of bounds you should print 'Wrong input'");
-            }
-
-            program.execute("-5\n12");
-
-            if (!output.toLowerCase().contains("wrong input")) {
-                return CheckResult.wrong("If the user input coordinates is out of bounds you should print 'Wrong input'");
-            }
-
-            program.execute("5\n5");
 
             return CheckResult.correct();
         }
@@ -433,6 +423,10 @@ files:
             String[] splittedOutput = arrangement.split("\n");
 
             for (int i = 1; i < rows + 1; i++) {
+
+                if (i == splittedOutput.length) {
+                    throw new WrongAnswer("In the seating arrangement should be " + rows + " rows!");
+                }
 
                 String errorMessage = "The ";
                 if (i == 1) {
@@ -531,6 +525,13 @@ files:
         }
     }
   learner_created: false
+- name: src/Cinema.java
+  visible: true
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/133/stages/713/implement
-status: Unchecked
+status: Solved
+feedback:
+  message: Congratulations! Continue on <a href="https://hyperskill.org/projects/133/stages/713/implement">JetBrains
+    Academy</a>
+  time: Sat, 31 Oct 2020 20:25:55 UTC
 record: -1
